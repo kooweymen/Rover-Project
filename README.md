@@ -1,2 +1,8 @@
 # Rover-Project
-3D printed experimental rover.
+3D printed experimental rover that aims to be an environment for me to learn various skills:
+- develop my CAD modelling skills
+- experiment with DC motors
+- designing circuits involving RC components
+- designing mechanical parts
+- explore PID control algorithm
+- potentially implementing ardurover
