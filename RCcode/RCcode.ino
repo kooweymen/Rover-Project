@@ -1,39 +1,38 @@
 /*
-  6WD robot example program
-  - Tested with Arduino Mega 2560
-  www: http://www.mobilerobots.pl
-
   Connections:
-  BTS7960 -> Arduino Mega 2560
-  MotorRight_R_EN - 22
-  MotorRight_L_EN - 23
-  MotorLeft_R_EN - 26
-  MotorLeft_L_EN - 27
-  Rpwm1 - 2
-  Lpwm1 - 3
-  Rpwm2 - 4
-  Lpwm2 - 5
+  BTS7960 -> Arduino Mega 2560 / Teensy 4.1
+  MotorRight_R_EN - 22 - Teensy 4.1 pin 6
+  MotorRight_L_EN - 23 - Teensy 4.1 pin 7
+  MotorLeft_R_EN - 26 - Teensy 4.1 pin 8
+  MotorLeft_L_EN - 27 - Teensy 4.1 pin 9
+  Rpwm1 - 2 - Teensy 4.1 pin 2
+  Lpwm1 - 3 - Teensy 4.1 pin 3
+  Rpwm2 - 4 - Teensy 4.1 pin 4
+  Lpwm2 - 5 - Teensy 4.1 pin 5
 
-  ​FlySky FS 2.4GHz Receiver -> Arduino Mega 2560
-  ch2 - 7 // Aileron
-  ch3 - 8 // Elevator
+  FlySky FS 2.4GHz Receiver -> Arduino Mega 2560 / Teensy 4.1
+  ch2 - 7 // Aileron  - Teensy 4.1 pin 36
+  ch3 - 8 // Elevator  - Teensy 4.1 pin 37
 */
+
+/*Defining the upper and lower threshold in order for the motor to start moving*/
 #define LOWER_STOP_RANGE_MOVE -20
 #define UPPER_STOP_RANGE_MOVE 20
 #define LOWER_STOP_RANGE_TURN -20
 #define UPPER_STOP_RANGE_TURN 20
 
 /*BTS7960 Motor Driver Carrier*/
-const int MotorRight_R_EN = 22;
-const int MotorRight_L_EN = 23;
+const int MotorRight_R_EN = 6;
+const int MotorRight_L_EN = 7;
 
-const int MotorLeft_R_EN = 26;
-const int MotorLeft_L_EN = 27;
+const int MotorLeft_R_EN = 8;
+const int MotorLeft_L_EN = 9;
 
 const int Rpwm1 = 2;
 const int Lpwm1 = 3;
 const int Rpwm2 = 4;
 const int Lpwm2 = 5;
+
 long pwmLvalue = 255;
 long pwmRvalue = 255;
 byte pwmChannel;
@@ -49,7 +48,6 @@ int ledState = LOW;
 unsigned long previousMillis = 0;
 const long interval = 1000;
 
-
 // MODE2
 int ch2; // Aileron
 int ch3; // Elevator
@@ -60,8 +58,8 @@ int turnValue;
 
 void setup() {
   pinMode(18, INPUT);
-  pinMode(7, INPUT);
-  pinMode(8, INPUT);
+  pinMode(36, INPUT);
+  pinMode(37, INPUT);
   Serial.begin(9600);
 
   //Setup Right Motors
@@ -88,15 +86,21 @@ void setup() {
 
 void loop() {
 
-  ch2 = pulseIn(7, HIGH, 25000);
-  ch3 = pulseIn(8, HIGH, 25000);
+  ch2 = pulseIn(36, HIGH, 25000);
+  ch3 = pulseIn(37, HIGH, 25000);
 
-  moveValue = map(ch3, 980, 1999, -255, 255);
-  Serial.println(moveValue);
-  moveValue = constrain(moveValue, -255, 255);
-  turnValue = map(ch2, 980, 1999, -255, 255);
+  //Defining movement speed
+  moveValue = map(ch3, 980, 1999, -255, 255); // Convert the raw signal range of the receiver into [-255,255]
+  moveValue = constrain(moveValue, -255, 255); // Change the number from 20 to 255 to change speed
+  Serial.print("Move Value: ");
+  Serial.print(moveValue);
+
+//Defining turning speed
+  turnValue = map(ch2, 980, 1999, -255, 255); // Convert the raw signal range of the receiver into [-255,255]
+  turnValue = constrain(turnValue, -100, 100); // Change the number from 20 to 255 to change speed
+  Serial.print("  Turn Value: ");
   Serial.println(turnValue);
-  turnValue = constrain(turnValue, -255, 255);
+
 
   TailLightControl();
   digitalWrite(light1, HIGH);
@@ -110,6 +114,7 @@ void loop() {
       Serial.println("Stop Robot");
     }
   }
+
   //GO FORWARD & BACKWARD
   else if (turnValue > LOWER_STOP_RANGE_TURN && turnValue < UPPER_STOP_RANGE_TURN) {
     if (moveValue > UPPER_STOP_RANGE_MOVE) {
@@ -123,6 +128,7 @@ void loop() {
       Serial.println("Go Backward");
     }
   }
+
   //TURN RIGHT & LEFT
   else if (moveValue > LOWER_STOP_RANGE_MOVE && moveValue < UPPER_STOP_RANGE_MOVE) {
     if (turnValue > UPPER_STOP_RANGE_TURN) {
@@ -289,7 +295,6 @@ void SetMotors(int controlCase) {
       break;
   }
 }// void SetMotors(int controlCase)
-
 
 void TailLightControl() {
   unsigned long currentMillis = millis();
