@@ -6,3 +6,6 @@
 - designing mechanical parts
 - explore PID control algorithm
 - potentially implementing ardurover
+
+# Known issues for Rover 3
+- Motor will overheat
